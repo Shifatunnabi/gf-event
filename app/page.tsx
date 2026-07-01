@@ -1,65 +1,207 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 
 export default function Home() {
+  const products = [
+    { id: "french_fry", name: "FRENCH FRY", image: "/products/ff.png" },
+    { id: "curly_fries", name: "CURLY FRIES", image: "/products/cf.png" },
+    {
+      id: "cheesy_potato_balls",
+      name: "CHEESY POTATO BALLS",
+      image: "/products/chb.png",
+    },
+    { id: "smilies", name: "SMILIES", image: "/products/sm.png" },
+  ];
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+
+  const toggleProduct = (productId: string) => {
+    setSelectedProducts((previous) =>
+      previous.includes(productId)
+        ? previous.filter((id) => id !== productId)
+        : [...previous, productId]
+    );
+  };
+
+  const setProductRating = (productId: string, rating: number) => {
+    setRatings((previous) => ({ ...previous, [productId]: rating }));
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="event-page">
+      <div className="event-bg-pattern" aria-hidden="true" />
+      <main className="event-main">
+        <section className="brand-lockup" aria-label="Event brands">
+          <Image
+            src="/alimento.png"
+            alt="Alimento"
+            width={172}
+            height={74}
+            priority
+            className="brand-logo"
+          />
+          <span className="brand-cross" aria-hidden="true">
+            ×
+          </span>
+          <Image
+            src="/gloryfry.png"
+            alt="Gloryfry"
+            width={172}
+            height={74}
+            priority
+            className="brand-logo"
+          />
+        </section>
+
+        <section className="hero-copy">
+          <p className="hero-kicker">Taste. Feel. Review.</p>
+          <h1 className="hero-title">Your Bite Powers Our Next Big Flavor</h1>
+          <p className="hero-text">
+            You are at the center of this campaign. Taste your favorite sample,
+            pick the product you tried, and drop your quick feedback.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        </section>
+
+        <section className="form-wrap" aria-labelledby="form-heading">
+          <h2 id="form-heading" className="form-heading">
+            Event Feedback Form
+          </h2>
+          <form className="event-form">
+            <div className="field-group">
+              <label htmlFor="name">Name</label>
+              <input id="name" name="name" type="text" required />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" required />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" />
+            </div>
+
+            <fieldset className="products-group">
+              <legend>Which product did you taste?</legend>
+              <div className="product-box-grid">
+                {products.map((product) => {
+                  const isSelected = selectedProducts.includes(product.id);
+                  const rating = ratings[product.id] ?? 0;
+                  const checkboxId = `product-${product.id}`;
+
+                  return (
+                    <article
+                      key={product.id}
+                      className={`product-box ${isSelected ? "is-selected" : ""}`}
+                    >
+                      <input
+                        id={checkboxId}
+                        className="product-toggle"
+                        type="checkbox"
+                        name="products"
+                        value={product.name}
+                        checked={isSelected}
+                        onChange={() => toggleProduct(product.id)}
+                      />
+
+                      <label htmlFor={checkboxId} className="product-select-area">
+                        <div className="product-photo">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 768px) 45vw, 260px"
+                            className="product-photo-image"
+                          />
+                        </div>
+
+                        <div className="product-checkline">
+                          <span className="product-checkbox-icon" aria-hidden="true" />
+                          <span className="product-name">{product.name}</span>
+                        </div>
+                      </label>
+
+                      <div className="rating-wrap" aria-hidden={!isSelected}>
+                        <div
+                          className="rating-stars"
+                          role="radiogroup"
+                          aria-label={`${product.name} rating`}
+                        >
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              role="radio"
+                              aria-checked={rating === star}
+                              className={`star-btn ${star <= rating ? "is-on" : ""}`}
+                              onClick={() => setProductRating(product.id, star)}
+                            >
+                              ★
+                            </button>
+                          ))}
+                        </div>
+
+                        <input
+                          type="hidden"
+                          name={`rating_${product.id}`}
+                          value={isSelected ? rating : ""}
+                        />
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <button type="submit" className="submit-btn">
+              Submit Review
+            </button>
+          </form>
+        </section>
       </main>
+
+      <footer className="event-footer">
+        <div className="footer-logos" aria-label="Brand logos in footer">
+          <Image
+            src="/alimento.png"
+            alt="Alimento"
+            width={130}
+            height={56}
+            className="brand-logo"
+          />
+          <span className="brand-cross" aria-hidden="true">
+            ×
+          </span>
+          <Image
+            src="/gloryfry.png"
+            alt="Gloryfry"
+            width={130}
+            height={56}
+            className="brand-logo"
+          />
+        </div>
+
+        <div className="footer-meta">
+          <div className="social-row" aria-label="Social media links">
+            <a href="#" aria-label="Instagram">
+              Instagram
+            </a>
+            <a href="#" aria-label="Facebook">
+              Facebook
+            </a>
+            <a href="#" aria-label="YouTube">
+              YouTube
+            </a>
+          </div>
+          <address>
+            Alimento Foods and Gloryfry Experience Booth, City Expo Ground,
+            Dhaka, Bangladesh
+          </address>
+        </div>
+      </footer>
     </div>
   );
 }
