@@ -1,7 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import Image from "next/image";
+import { submitFeedback, type FeedbackFormState } from "./actions";
+
+const initialFeedbackState: FeedbackFormState = { status: "idle" };
+const FACEBOOK_POST_URL = "https://www.facebook.com/share/p/1Bez7Xz8DS/";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button type="submit" className="submit-btn" disabled={pending}>
+      {pending ? "Submitting…" : "Submit Review"}
+    </button>
+  );
+}
 
 export default function Home() {
   const products = [
@@ -16,6 +31,39 @@ export default function Home() {
   ];
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [state, formAction] = useActionState(submitFeedback, initialFeedbackState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [handledStatus, setHandledStatus] = useState(state.status);
+  const popupRef = useRef<Window | null>(null);
+  const [popupBlocked, setPopupBlocked] = useState(false);
+
+  if (state.status !== handledStatus) {
+    setHandledStatus(state.status);
+    if (state.status === "success") {
+      setSelectedProducts([]);
+      setRatings({});
+    }
+  }
+
+  useEffect(() => {
+    if (state.status === "success") {
+      formRef.current?.reset();
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.location.href = FACEBOOK_POST_URL;
+        popupRef.current.focus();
+      }
+    } else if (state.status === "error") {
+      popupRef.current?.close();
+    }
+  }, [state.status]);
+
+  const handleFormSubmit = () => {
+    // Reserve a tab synchronously (within the click's user-gesture context) so
+    // browsers don't block it once we navigate it after the async submission finishes.
+    const popup = window.open("", "_blank");
+    popupRef.current = popup;
+    setPopupBlocked(!popup);
+  };
 
   const toggleProduct = (productId: string) => {
     setSelectedProducts((previous) =>
@@ -68,7 +116,12 @@ export default function Home() {
           <h2 id="form-heading" className="form-heading">
             Event Feedback Form
           </h2>
-          <form className="event-form">
+          <form
+            className="event-form"
+            action={formAction}
+            ref={formRef}
+            onSubmit={handleFormSubmit}
+          >
             <div className="field-group">
               <label htmlFor="name">Name</label>
               <input id="name" name="name" type="text" required />
@@ -107,21 +160,22 @@ export default function Home() {
                         onChange={() => toggleProduct(product.id)}
                       />
 
-                      <label htmlFor={checkboxId} className="product-select-area">
-                        <div className="product-photo">
+                      <label htmlFor={checkboxId} className="product-photo-trigger">
+                        <div className="product-photo" style={{ position: "relative" }}>
                           <Image
                             src={product.image}
                             alt={product.name}
                             fill
+                            loading="eager"
                             sizes="(max-width: 768px) 45vw, 260px"
                             className="product-photo-image"
                           />
                         </div>
+                      </label>
 
-                        <div className="product-checkline">
-                          <span className="product-checkbox-icon" aria-hidden="true" />
-                          <span className="product-name">{product.name}</span>
-                        </div>
+                      <label htmlFor={checkboxId} className="product-checkline">
+                        <span className="product-checkbox-icon" aria-hidden="true" />
+                        <span className="product-name">{product.name}</span>
                       </label>
 
                       <div className="rating-wrap" aria-hidden={!isSelected}>
@@ -156,9 +210,30 @@ export default function Home() {
               </div>
             </fieldset>
 
-            <button type="submit" className="submit-btn">
-              Submit Review
-            </button>
+            {state.status !== "idle" && (
+              <p
+                className={`form-status ${
+                  state.status === "success" ? "is-success" : "is-error"
+                }`}
+                role="status"
+                aria-live="polite"
+              >
+                {state.message}
+              </p>
+            )}
+
+            {state.status === "success" && popupBlocked && (
+              <a
+                href={FACEBOOK_POST_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fb-fallback-link"
+              >
+                Open our Facebook post
+              </a>
+            )}
+
+            <SubmitButton />
           </form>
         </section>
       </main>
