@@ -403,14 +403,6 @@ body {
   color: #ff8080;
 }
 
-.fb-fallback-link {
-  color: #ffe84a;
-  font-size: 0.84rem;
-  font-weight: 700;
-  text-decoration: underline;
-  width: fit-content;
-}
-
 .event-footer {
   position: relative;
   z-index: 1;

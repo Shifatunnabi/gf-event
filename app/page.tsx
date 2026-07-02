@@ -34,8 +34,6 @@ export default function Home() {
   const [state, formAction] = useActionState(submitFeedback, initialFeedbackState);
   const formRef = useRef<HTMLFormElement>(null);
   const [handledStatus, setHandledStatus] = useState(state.status);
-  const popupRef = useRef<Window | null>(null);
-  const [popupBlocked, setPopupBlocked] = useState(false);
 
   if (state.status !== handledStatus) {
     setHandledStatus(state.status);
@@ -48,22 +46,16 @@ export default function Home() {
   useEffect(() => {
     if (state.status === "success") {
       formRef.current?.reset();
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.location.href = FACEBOOK_POST_URL;
-        popupRef.current.focus();
-      }
-    } else if (state.status === "error") {
-      popupRef.current?.close();
+      // Redirect the current tab rather than opening a new one: Safari (especially
+      // iOS) blocks navigating a window.open() handle once the click's user-gesture
+      // window has passed, so a same-tab redirect is the only approach that's
+      // reliable across browsers.
+      const timer = setTimeout(() => {
+        window.location.href = FACEBOOK_POST_URL;
+      }, 1200);
+      return () => clearTimeout(timer);
     }
   }, [state.status]);
-
-  const handleFormSubmit = () => {
-    // Reserve a tab synchronously (within the click's user-gesture context) so
-    // browsers don't block it once we navigate it after the async submission finishes.
-    const popup = window.open("", "_blank");
-    popupRef.current = popup;
-    setPopupBlocked(!popup);
-  };
 
   const toggleProduct = (productId: string) => {
     setSelectedProducts((previous) =>
@@ -116,12 +108,7 @@ export default function Home() {
           <h2 id="form-heading" className="form-heading">
             Event Feedback Form
           </h2>
-          <form
-            className="event-form"
-            action={formAction}
-            ref={formRef}
-            onSubmit={handleFormSubmit}
-          >
+          <form className="event-form" action={formAction} ref={formRef}>
             <div className="field-group">
               <label htmlFor="name">Name</label>
               <input id="name" name="name" type="text" required />
@@ -220,17 +207,6 @@ export default function Home() {
               >
                 {state.message}
               </p>
-            )}
-
-            {state.status === "success" && popupBlocked && (
-              <a
-                href={FACEBOOK_POST_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="fb-fallback-link"
-              >
-                Open our Facebook post
-              </a>
             )}
 
             <SubmitButton />
