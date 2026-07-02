@@ -14,9 +14,9 @@ const PRODUCT_COLUMNS = [
   { id: "smilies", header: "SMILIES" },
 ] as const;
 
-function parseRating(value: FormDataEntryValue | null): string {
+function formatRatingStars(value: FormDataEntryValue | null): string {
   const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed >= 1 && parsed <= 5 ? String(parsed) : "";
+  return Number.isInteger(parsed) && parsed >= 1 && parsed <= 5 ? "⭐".repeat(parsed) : "";
 }
 
 async function getSheetsAccessToken(): Promise<string> {
@@ -85,7 +85,7 @@ export async function submitFeedback(
   }
 
   const ratings = PRODUCT_COLUMNS.map((product) =>
-    parseRating(formData.get(`rating_${product.id}`))
+    formatRatingStars(formData.get(`rating_${product.id}`))
   );
 
   try {
