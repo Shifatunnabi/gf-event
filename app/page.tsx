@@ -6,7 +6,7 @@ import Image from "next/image";
 import { submitFeedback, type FeedbackFormState } from "./actions";
 
 const initialFeedbackState: FeedbackFormState = { status: "idle" };
-const FACEBOOK_POST_URL = "https://www.facebook.com/share/p/1Bez7Xz8DS/";
+const FACEBOOK_POST_URL = "https://www.facebook.com/share/p/1EUD4aLZuY/";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -237,13 +237,13 @@ export default function Home() {
 
         <div className="footer-meta">
           <div className="social-row" aria-label="Social media links">
-            <a href="#" aria-label="Instagram">
+            <a href="https://www.facebook.com/share/1BnSw4irCm/" aria-label="Instagram">
               Instagram
             </a>
-            <a href="#" aria-label="Facebook">
+            <a href="https://www.facebook.com/share/1BnSw4irCm/" aria-label="Facebook">
               Facebook
             </a>
-            <a href="#" aria-label="YouTube">
+            <a href="https://www.facebook.com/share/1BnSw4irCm/" aria-label="YouTube">
               YouTube
             </a>
           </div>
